@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -51,7 +52,6 @@ namespace EventDriven
 
         }
 
-
         public DataTable RecordAll()
         {
             DataTable masterTable = new DataTable();
@@ -88,29 +88,32 @@ namespace EventDriven
 
                 while ((line = sr.ReadLine()) != null)
                 {
-                    var rowValues = line.Split(',');
+                    if (line != " ")
+                    {
+                        var rowValues = line.Split(',');
 
-                    if (isFirstLine)
-                    {
-                        foreach (var column in rowValues)
+                        if (isFirstLine)
                         {
-                            if (column == "IsFinished")
+                            foreach (var column in rowValues)
                             {
-                                dataTable.Columns.Add(column.Trim(), typeof(bool));
+                                if (column == "IsFinished")
+                                {
+                                    dataTable.Columns.Add(column.Trim(), typeof(bool));
+                                }
+                                else
+                                    dataTable.Columns.Add(column.Trim());
                             }
-                            else
-                                dataTable.Columns.Add(column.Trim());
+                            isFirstLine = false;
                         }
-                        isFirstLine = false;
-                    }
-                    else
-                    {
-                        DataRow row = dataTable.NewRow();
-                        for (int i = 0; i < rowValues.Length; i++)
+                        else
                         {
-                            row[i] = rowValues[i].Trim();
+                            DataRow row = dataTable.NewRow();
+                            for (int i = 0; i < rowValues.Length; i++)
+                            {
+                                row[i] = rowValues[i].Trim();
+                            }
+                            dataTable.Rows.Add(row);
                         }
-                        dataTable.Rows.Add(row);
                     }
                 }
             }
@@ -122,7 +125,7 @@ namespace EventDriven
             using (StreamWriter sw = new StreamWriter(Path.Combine(solutionDirectory, (category + ".txt")), true))
             {
                 sw.BaseStream.Seek(0, SeekOrigin.End);
-                sw.Write($"\n{name},{category},{priority},{date},{description},false");
+                sw.Write($"\n{name},{category},{date},{description},false,{priority}");
             }
         }
 
@@ -134,9 +137,123 @@ namespace EventDriven
             }
         }
 
+        public void UpdateTask(DataTable updatedTable)
+        {
+            string[] files = Directory.GetFiles(solutionDirectory);
+
+            for(int x = 0; x < files.Length; x++)
+            {
+                string filePath = Path.Combine(solutionDirectory, files[x]);
+
+                using (StreamWriter sw = new StreamWriter(filePath))
+                {
+                    sw.BaseStream.Seek(0, SeekOrigin.End);
+                    sw.WriteLine($"Task Name,Category,Due Date,Description,IsFinished,Urgency");
+
+                    foreach (DataRow row in updatedTable.Rows)
+                    {
+                        if (row["Category"].ToString() == files[x].Replace(".txt", "").Replace(@"C:\Users\23-0085c\Source\Repos\EventDriven\Data\", ""))
+                        {
+                            sw.BaseStream.Seek(0, SeekOrigin.End);
+                            string line = $"{row["Task Name"]},{row["Category"]},{row["Due Date"]},{row["Description"]},{row["IsFinished"]},{row["Urgency"]}";
+                            sw.WriteLine(line);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void UpdateTask(string fileName, DataTable updatedTable)
+        {
+            string filePath = Path.Combine(solutionDirectory, fileName);
+
+            using (StreamWriter sw = new StreamWriter(filePath, false)) // Overwrites the file
+            {
+                // Write the header row
+                sw.WriteLine("Task Name,Category,Due Date,Description,IsFinished,Urgency");
+
+                // Write all updated rows
+                foreach (DataRow row in updatedTable.Rows)
+                {
+                    string line = $"{row["Task Name"]},{row["Category"]},{row["Due Date"]},{row["Description"]},{row["IsFinished"]},{row["Urgency"]}";
+                    sw.WriteLine(line);
+                }
+            }
+        }
+
         public void Delete(string file)
         {
             File.Delete(Path.Combine(solutionDirectory, file));
+        }
+
+        public void DeleteTask(string taskName, DataTable updatedTable)
+        {
+            string[] files = Directory.GetFiles(solutionDirectory);
+
+            for (int x = 0; x < files.Length; x++)
+            {
+                string filePath = Path.Combine(solutionDirectory, files[x]);
+
+                foreach (DataRow row in updatedTable.Rows)
+                {
+                    if (row["Task Name"].ToString() == taskName)
+                    {
+                        using 
+                    }
+                }
+
+
+                using (StreamWriter sw = new StreamWriter(filePath))
+                {
+                    sw.BaseStream.Seek(0, SeekOrigin.End);
+                    sw.WriteLine($"Task Name,Category,Due Date,Description,IsFinished,Urgency");
+
+                    foreach (DataRow row in updatedTable.Rows)
+                    {
+                        if (row["Category"].ToString() == files[x].Replace(".txt", "").Replace(@"C:\Users\23-0085c\Source\Repos\EventDriven\Data\", ""))
+                        {
+                            sw.BaseStream.Seek(0, SeekOrigin.End);
+                            string line = $"{row["Task Name"]},{row["Category"]},{row["Due Date"]},{row["Description"]},{row["IsFinished"]},{row["Urgency"]}";
+                            sw.WriteLine(line);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        public void DeleteTask(string fileName, string taskName)
+        {
+            string filePath = Path.Combine(solutionDirectory, fileName);
+
+            using (StreamWriter sw = new StreamWriter(filePath))
+            {
+
+            }
+
+
+                if (!File.Exists(filePath))
+                {
+                    System.Windows.MessageBox.Show("File not found!");
+                    return;
+                }
+
+            List<string> lines = File.ReadAllLines(filePath).ToList();
+
+            // Check if the file has data to process
+            if (lines.Count <= 1)
+            {
+                System.Windows.MessageBox.Show("No tasks found in this category!");
+                return;
+            }
+
+            // Remove task by name (excluding the header line)
+            List<string> updatedLines = lines.Where(line => !line.StartsWith(taskName + ",")).ToList();
+
+            // Rewrite the file with updated lines
+            File.WriteAllLines(filePath, updatedLines);
+
+            System.Windows.MessageBox.Show("Task deleted successfully!");
         }
     }
 }

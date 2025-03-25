@@ -26,7 +26,7 @@ namespace EventDriven
         FileManager fileManager = new FileManager();
         AddTask newTask;
         AddCategory newCategory;
-        int current;
+        int current = -1;
         bool editMode = false;
         public MainWindow()
         {
@@ -53,27 +53,35 @@ namespace EventDriven
         }
         private void SetDataGrid()
         {
-            if (!CheckColumns())
+            DataGridCheckBoxColumn checkBoxColumn = new DataGridCheckBoxColumn
             {
-                DataGridCheckBoxColumn checkBoxColumn = new DataGridCheckBoxColumn
-                {
-                    Header = "Finished",
-                    Binding = new System.Windows.Data.Binding("IsFinished")
-                };
+                Header = "Finished",
+                Binding = new System.Windows.Data.Binding("IsFinished")
+            };
 
-                DataGridComboBoxColumn comboBoxColumn = new DataGridComboBoxColumn
-                {
-                    Header = "Priority"
-                };
+            DataGridComboBoxColumn comboBoxColumn = new DataGridComboBoxColumn
+            {
+                Header = "Priority"
+            };
+            List<string> priorities = new List<string> { "Low", "Medium", "High" };
+            comboBoxColumn.ItemsSource = priorities;
+            Binding binding = new Binding("Urgency");
+            binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            binding.Mode = BindingMode.TwoWay;
+            comboBoxColumn.SelectedItemBinding = binding;
 
-                List<string> priorities = new List<string> { "Low", "Medium", "High" };
-                comboBoxColumn.ItemsSource = priorities;
-                Binding binding = new Binding("Urgency");
-                binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-                binding.Mode = BindingMode.TwoWay; 
-                comboBoxColumn.SelectedItemBinding = binding;
-
+            if (!CheckFinished())
+            {
                 ListTable.Columns.Insert(0, checkBoxColumn);
+                ListTable.Columns[6].Visibility = System.Windows.Visibility.Collapsed;
+            }
+            if (!CheckPriority())
+            {
+                ListTable.Columns.Insert(4, comboBoxColumn);         
+            }
+            else
+            {
+                ListTable.Columns.RemoveAt(1);
                 ListTable.Columns.Insert(4, comboBoxColumn);
             }
 
@@ -86,15 +94,13 @@ namespace EventDriven
                 column.Width = new DataGridLength(130);
             }
 
-            Trigger();
-
-
             ListTable.Columns[6].Visibility = System.Windows.Visibility.Collapsed;
             ListTable.Columns[7].Visibility = System.Windows.Visibility.Collapsed;
+            Trigger();
         }
         private void Trigger()
         {
-            if (ListTable.Items.Count < 0)
+            if (ListTable.Items.Count <= 0)
             {
                 EditRow_Button.IsEnabled = false;
                 DeleteRow_Button.IsEnabled = false;
@@ -156,7 +162,7 @@ namespace EventDriven
                 ListCategory.Items.Add(buttons[x]);
             }
 
-            if (ListCategory.Items.Count == 3)
+            if (ListCategory.Items.Count >= 3)
             {
                 ManipulateRow_Button.IsEnabled = true;
             }
@@ -177,22 +183,34 @@ namespace EventDriven
             Table_Lbl.Content = clickedButton.Name.ToString().Replace("_Button", "");
             DeleteCategory_Button.IsEnabled = true;
             current = (ListCategory.Items.IndexOf(clickedButton)) - 1;
+
             DataTable viewTable = CreateTables(current);
             ListTable.ItemsSource = viewTable.DefaultView;
             SetDataGrid();
         }
-        private bool CheckColumns()
+        private bool CheckFinished()
         {
             foreach (DataGridColumn column in ListTable.Columns)
             {
-                if ((column.Header != null && column.Header.ToString() == "Finished") || (column.Header != null && column.Header.ToString() == "Priority"))
+                if (column.Header.ToString() == "Finished")
                 {
                     return true;
                 }
             }
-
             return false;
         }
+        private bool CheckPriority()
+        {
+            foreach (DataGridColumn column in ListTable.Columns)
+            {
+                if (column.Header.ToString() == "Priority")
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private void AllTasks_Button_Click(object sender, RoutedEventArgs e)
         {
             Table_Lbl.Content = "All Tasks";
@@ -282,6 +300,21 @@ namespace EventDriven
                 Status.Content = "Off";
                 Status.Foreground = new SolidColorBrush(Colors.Red);
                 FixDates();
+
+
+                if (current == -1)
+                {
+                    DataTable updatedTable = ((DataView)ListTable.ItemsSource).ToTable();
+                    fileManager.UpdateTask(updatedTable);
+
+                }
+                else
+                {
+                    string[] files = fileManager.GetFiles();
+                    string fileName = files[current];
+                    DataTable updatedTable = ((DataView)ListTable.ItemsSource).ToTable();
+                    fileManager.UpdateTask(fileName, updatedTable);
+                }
             }
         }
         private void FixDates()
@@ -302,6 +335,38 @@ namespace EventDriven
                 rowView["Urgency"] = selectedValue;
             }
 
+        }
+        private void DeleteRow_Button_Click(object sender, RoutedEventArgs e)
+        {
+            {
+                DataTable updatedTable = ((DataView)ListTable.ItemsSource).ToTable();
+                fileManager.UpdateTask(updatedTable);
+
+                if (ListTable.SelectedItem is DataRowView selectedRow)
+                {
+                    string taskName = selectedRow["Task Name"].ToString();
+                    string category = selectedRow["Category"].ToString();
+
+                    MessageBoxResult result = MessageBox.Show($"Are you sure you want to delete '{taskName}'?", "Confirmation", MessageBoxButton.YesNo);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        if(current == -1)
+                        {
+                            fileManager.DeleteTask(taskName, updatedTable);
+
+                        }
+
+
+                        fileManager.DeleteTask(fileName, taskName);
+                        RefreshTable(null, null); // Refresh the table after deletion
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please select a task to delete.");
+                }
+            }
         }
     }
 }

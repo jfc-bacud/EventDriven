@@ -96,7 +96,7 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button x:Name="ManipulateRow_Button" Content="Add Task" Style="{StaticResource RoundedButtonStyle}" Margin="0,20,10,0" Click="ManipulateRow_Button_Click" IsEnabled="False" MouseEnter="Button_OnHover" MouseLeave="Button_OnLeave"/>
                 <Button x:Name="EditRow_Button" Content="Edit Task" Style="{StaticResource RoundedButtonStyle}" Margin="0,20,10,0" IsEnabled="False" MouseEnter="Button_OnHover" MouseLeave="Button_OnLeave" Click="EditRow_Button_Click"/>
-                <Button x:Name="DeleteRow_Button" Content="Delete Task" Style="{StaticResource RoundedButtonStyle}" Margin="0,20,0,0" IsEnabled="False" MouseEnter="Button_OnHover" MouseLeave="Button_OnLeave"/>
+                <Button x:Name="DeleteRow_Button" Content="Delete Task" Style="{StaticResource RoundedButtonStyle}" Margin="0,20,0,0" IsEnabled="False" MouseEnter="Button_OnHover" MouseLeave="Button_OnLeave" Click="DeleteRow_Button_Click"/>
             </StackPanel>
         </StackPanel>
     </Grid>
