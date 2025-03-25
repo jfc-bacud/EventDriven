@@ -48,5 +48,15 @@ namespace EventDriven
             var mainWindow = Application.Current.MainWindow;
             mainWindow.WindowState = WindowState.Normal;
         }
+        private void Button_OnHover(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF417F9A"));
+        }
+        private void Button_OnLeave(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            button.Background = new SolidColorBrush(Colors.White);
+        }
     }
 }

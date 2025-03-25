@@ -62,7 +62,7 @@
             </StackPanel>
             <Label Content="Description:" FontFamily="Constantia" FontSize="19" Width="351" />
             <TextBox x:Name="Description_TB" Height="85" Width="354" TextWrapping="Wrap" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
-            <Button x:Name="Save_Button" Content="Save" Style="{DynamicResource RoundedButtonStyle}" Width="20" Margin="12" Click="Save_Button_Click"/>
+            <Button x:Name="Save_Button" Content="Save" Style="{DynamicResource RoundedButtonStyle}" Width="20" Margin="12" Click="Save_Button_Click" MouseEnter="Button_OnHover" MouseLeave="Button_OnLeave"/>
         </StackPanel>
     </Grid>
 </Window>

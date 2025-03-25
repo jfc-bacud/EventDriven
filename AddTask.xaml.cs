@@ -31,6 +31,8 @@ namespace EventDriven
         {
             InitializeComponent();
         }
+
+        #region Combobox
         private void PopulateBoxes()
         {
             CategoryList();
@@ -56,6 +58,9 @@ namespace EventDriven
             Priority_Box.Items.Add("Low");
             Priority_Box.SelectedIndex = 0;
         }
+        #endregion
+
+        #region Triggers & Miscelleaneous
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
@@ -63,7 +68,6 @@ namespace EventDriven
             var mainWindow = Application.Current.MainWindow;
             mainWindow.WindowState = WindowState.Normal;
         }
-
         private void Save_Button_Click(object sender, RoutedEventArgs e)
         {
             if (Validate())
@@ -114,5 +118,18 @@ namespace EventDriven
                 }
             }
         }
+
+        private void Button_OnHover(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF417F9A"));
+        }
+        private void Button_OnLeave(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            button.Background = new SolidColorBrush(Colors.White);
+        }
+
+        #endregion
     }
 }

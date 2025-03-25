@@ -22,8 +22,7 @@ namespace EventDriven
     internal class FileManager
     {
         public string solutionDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\", @"EventDriven\Data\"));
-        // Assuming your folder is inside the solution directory (e.g., SolutionFolder/TargetFolder)
-
+   
         public string[] GetFiles()
         {
             DirectoryInfo directoryInfo = new DirectoryInfo(solutionDirectory);
@@ -33,10 +32,8 @@ namespace EventDriven
             {
                 for (int j = 0; j < files.Length - 1 - i; j++)
                 {
-                    // Compare the creation time of the two files
                     if (files[j].CreationTime > files[j + 1].CreationTime)
                     {
-                        // Swap the files if they are in the wrong order
                         FileInfo temp = files[j];
                         files[j] = files[j + 1];
                         files[j + 1] = temp;
@@ -53,6 +50,7 @@ namespace EventDriven
 
         }
 
+        #region Read
         public DataTable RecordAll()
         {
             DataTable masterTable = new DataTable();
@@ -78,7 +76,6 @@ namespace EventDriven
 
             return masterTable;
         }
-
         public DataTable Read(string file)
         {
             DataTable dataTable = new DataTable();
@@ -120,7 +117,9 @@ namespace EventDriven
             }
             return dataTable;
         }
+        #endregion
 
+        #region Write
         public void Write(string name, string category, string priority, string date, string description)
         {
             using (StreamWriter sw = new StreamWriter(Path.Combine(solutionDirectory, (category + ".txt")), true))
@@ -166,7 +165,7 @@ namespace EventDriven
             string filePath = Path.Combine(solutionDirectory, fileName);
 
             using (StreamWriter sw = new StreamWriter(filePath, false)) // Overwrites the file
-            {     
+            {
                 sw.Write("Task Name,Category,Due Date,Description,IsFinished,Urgency");
                 sw.BaseStream.Seek(0, SeekOrigin.End);
 
@@ -178,7 +177,9 @@ namespace EventDriven
                 }
             }
         }
+        #endregion 
 
+        #region Delete
         public void Delete(string file)
         {
             File.Delete(Path.Combine(solutionDirectory, file));
@@ -218,5 +219,6 @@ namespace EventDriven
 
             return strings;
         }
+        #endregion
     }
 }

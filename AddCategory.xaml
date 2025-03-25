@@ -49,7 +49,7 @@
                 <Label Content="Name:" FontFamily="Constantia" FontSize="19" Margin="40,0,25,0"/>
                 <TextBox x:Name="CategoryName_TB" Width="263" FontSize="13" Height="35" MaxLength="20"/>
             </StackPanel>
-            <Button x:Name="Save_Button" Content="Save" Style="{DynamicResource RoundedButtonStyle}" Width="20" Margin="12" Click="Save_Button_Click"/>
+            <Button x:Name="Save_Button" Content="Save" Style="{DynamicResource RoundedButtonStyle}" Width="20" Margin="12" Click="Save_Button_Click" MouseEnter="Button_OnHover" MouseLeave="Button_OnLeave"/>
         </StackPanel>
     </Grid>
 </Window>

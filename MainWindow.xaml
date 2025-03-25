@@ -31,7 +31,7 @@
             <Setter Property="Background" Value="White"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="False">
-                    <Setter Property="Background" Value="Gray"/>
+                    <Setter Property="Background" Value="LightGray"/>
                     <Setter Property="Foreground" Value="DarkGray"/>
                     <Setter Property="Cursor" Value="Arrow"/>
                 </DataTrigger>
@@ -62,7 +62,7 @@
             <Setter Property="Background" Value="DarkRed"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="False">
-                    <Setter Property="Background" Value="Gray"/>
+                    <Setter Property="Background" Value="Maroon"/>
                     <Setter Property="Foreground" Value="DarkGray"/>
                     <Setter Property="Cursor" Value="Arrow"/>
                 </DataTrigger>

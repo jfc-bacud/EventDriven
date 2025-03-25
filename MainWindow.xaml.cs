@@ -37,6 +37,8 @@ namespace EventDriven
         {
             ShowAll();
         }
+
+        #region DataGrid
         private DataTable CreateTables(int index)
         {
             string[] files = fileManager.GetFiles();
@@ -98,19 +100,31 @@ namespace EventDriven
             ListTable.Columns[7].Visibility = System.Windows.Visibility.Collapsed;
             Trigger();
         }
-        private void Trigger()
+        private bool CheckFinished()
         {
-            if (ListTable.Items.Count <= 0)
+            foreach (DataGridColumn column in ListTable.Columns)
             {
-                EditRow_Button.IsEnabled = false;
-                DeleteRow_Button.IsEnabled = false;
+                if (column.Header.ToString() == "Finished")
+                {
+                    return true;
+                }
             }
-            else
-            {
-                EditRow_Button.IsEnabled = true;
-                DeleteRow_Button.IsEnabled = true;
-            }
+            return false;
         }
+        private bool CheckPriority()
+        {
+            foreach (DataGridColumn column in ListTable.Columns)
+            {
+                if (column.Header.ToString() == "Priority")
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        #endregion
+
+        #region Display
         private void RenewCategoryList()
         {
             string[] files = fileManager.GetFiles();
@@ -146,10 +160,10 @@ namespace EventDriven
                 else
                 {
                     string fileName = System.IO.Path.GetFileName(files[x - 1]).Trim().Replace(".txt", "");
-                    string buttonName = fileName.Replace(" ", "");
+                    string buttonName = fileName.Replace(" ", "_");
 
                     buttons[x] = new Button();
-                    buttons[x].Name = buttonName + "_Button";
+                    buttons[x].Name = buttonName + "Button";
                     buttons[x].Content = fileName;
                     buttons[x].Style = buttonStyle;
                     buttons[x].HorizontalAlignment = HorizontalAlignment.Left;
@@ -177,57 +191,9 @@ namespace EventDriven
             ListTable.ItemsSource = viewTable.DefaultView;
             SetDataGrid();
         }
-        private void ButtonCategory_OnClick(object sender, RoutedEventArgs e)
-        {
-            Button clickedButton = sender as Button;
-            Table_Lbl.Content = clickedButton.Name.ToString().Replace("_Button", "");
-            DeleteCategory_Button.IsEnabled = true;
-            current = (ListCategory.Items.IndexOf(clickedButton)) - 1;
+        #endregion
 
-            DataTable viewTable = CreateTables(current);
-            ListTable.ItemsSource = viewTable.DefaultView;
-            SetDataGrid();
-        }
-        private bool CheckFinished()
-        {
-            foreach (DataGridColumn column in ListTable.Columns)
-            {
-                if (column.Header.ToString() == "Finished")
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-        private bool CheckPriority()
-        {
-            foreach (DataGridColumn column in ListTable.Columns)
-            {
-                if (column.Header.ToString() == "Priority")
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private void AllTasks_Button_Click(object sender, RoutedEventArgs e)
-        {
-            Table_Lbl.Content = "All Tasks";
-            current = -1;
-            DeleteCategory_Button.IsEnabled = false;
-            ShowAll();
-        }
-        private void ManipulateRow_Button_Click(object sender, RoutedEventArgs e)
-        {
-            if (newTask == null || !newTask.IsVisible)
-            {
-                newTask = new AddTask();
-                newTask.WindowClosed += RefreshTable;
-                newTask.Owner = this;
-                newTask.ShowDialog();
-            }
-        }
+        #region Refresh Triggers
         private void RefreshTable(object sender, EventArgs e)
         {
             DataTable viewTable = CreateTables(current);
@@ -239,6 +205,15 @@ namespace EventDriven
             ListCategory.Items.Clear();
             RenewCategoryList();
         }
+        private void RefreshWhole()
+        {
+            ListCategory.Items.Clear();
+            RenewCategoryList();
+            AllTasks_Button_Click(null, null);
+        }
+        #endregion
+
+        #region Main Buttons
         private void AddCategory_Button_Click(object sender, RoutedEventArgs e)
         {
             if (newCategory == null || !newCategory.IsVisible)
@@ -249,11 +224,6 @@ namespace EventDriven
                 newCategory.ShowDialog();
             }
         }
-        private void RefreshWhole()
-        {
-            ListCategory.Items.Clear();
-            RenewCategoryList();
-        }
         private void DeleteCategory_Button_Click(object sender, RoutedEventArgs e)
         {
             MessageBoxResult result = MessageBox.Show("Are you sure you want to delete?", "Confirmation", MessageBoxButton.YesNo);
@@ -263,6 +233,7 @@ namespace EventDriven
                 string[] files = fileManager.GetFiles();
                 fileManager.Delete(files[current]);
                 RefreshWhole();
+                
             }
             else
             {
@@ -270,15 +241,29 @@ namespace EventDriven
             }
 
         }
-        private void Button_OnHover(object sender, RoutedEventArgs e)
+        private void DeleteRow_Button_Click(object sender, RoutedEventArgs e)
         {
-            Button button = sender as Button;
-            button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF417F9A"));
-        }
-        private void Button_OnLeave(object sender, RoutedEventArgs e)
-        {
-            Button button = sender as Button;
-            button.Background = new SolidColorBrush(Colors.White);
+            DataTable updatedTable = ((DataView)ListTable.ItemsSource).ToTable();
+            fileManager.UpdateTask(updatedTable);
+
+            if (ListTable.SelectedItem is DataRowView selectedRow)
+            {
+                string taskName = selectedRow["Task Name"].ToString();
+                string category = selectedRow["Category"].ToString();
+
+                MessageBoxResult result = MessageBox.Show($"Are you sure you want to delete '{taskName}'?", "Confirmation", MessageBoxButton.YesNo);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    fileManager.DeleteTask(category, taskName);
+                    RefreshTable(null, null); // Refresh the table after deletion
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a task to delete.");
+            }
+
         }
         private void EditRow_Button_Click(object sender, RoutedEventArgs e)
         {
@@ -287,7 +272,6 @@ namespace EventDriven
                 editMode = true;
                 ListTable.IsReadOnly = false;
                 ListTable.Columns[2].IsReadOnly = true;
-                ListTable.Columns[3].IsReadOnly = true;
                 ListTable.CanUserAddRows = false;
                 Status.Content = "On";
                 Status.Foreground = new SolidColorBrush(Colors.Green);
@@ -317,13 +301,68 @@ namespace EventDriven
                 }
             }
         }
+        private void ButtonCategory_OnClick(object sender, RoutedEventArgs e)
+        {
+            Button clickedButton = sender as Button;
+            Table_Lbl.Content = clickedButton.Name.ToString().Replace("Button", "").Replace("_", " ");
+            DeleteCategory_Button.IsEnabled = true;
+            current = (ListCategory.Items.IndexOf(clickedButton)) - 1;
+            DataTable viewTable = CreateTables(current);
+            ListTable.ItemsSource = viewTable.DefaultView;
+            SetDataGrid();
+        }
+        private void AllTasks_Button_Click(object sender, RoutedEventArgs e)
+        {
+            Table_Lbl.Content = "All Tasks";
+            current = -1;
+            DeleteCategory_Button.IsEnabled = false;
+            ShowAll();
+        }
+        private void ManipulateRow_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (newTask == null || !newTask.IsVisible)
+            {
+                newTask = new AddTask();
+                newTask.WindowClosed += RefreshTable;
+                newTask.Owner = this;
+                newTask.ShowDialog();
+            }
+        }
+        #endregion
+
+        #region Decor
+        private void Button_OnHover(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF417F9A"));
+        }
+        private void Button_OnLeave(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            button.Background = new SolidColorBrush(Colors.White);
+        }
+        #endregion
+
+        #region Other Triggers & Miscellaneous
+        private void Trigger()
+        {
+            if (ListTable.Items.Count <= 0)
+            {
+                EditRow_Button.IsEnabled = false;
+                DeleteRow_Button.IsEnabled = false;
+            }
+            else
+            {
+                EditRow_Button.IsEnabled = true;
+                DeleteRow_Button.IsEnabled = true;
+            }
+        }
         private void FixDates()
         {
             foreach (DataRowView row in ListTable.Items)
             {
                 string temp = row["Due Date"].ToString().Replace("-", "/");
                 row["Due Date"] = temp;
-
             }
         }
         private void ListTable_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
@@ -336,30 +375,6 @@ namespace EventDriven
             }
 
         }
-        private void DeleteRow_Button_Click(object sender, RoutedEventArgs e)
-        {
-            {
-                DataTable updatedTable = ((DataView)ListTable.ItemsSource).ToTable();
-                fileManager.UpdateTask(updatedTable);
-
-                if (ListTable.SelectedItem is DataRowView selectedRow)
-                {
-                    string taskName = selectedRow["Task Name"].ToString();
-                    string category = selectedRow["Category"].ToString();
-
-                    MessageBoxResult result = MessageBox.Show($"Are you sure you want to delete '{taskName}'?", "Confirmation", MessageBoxButton.YesNo);
-
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        fileManager.DeleteTask(category, taskName);
-                        RefreshTable(null, null); // Refresh the table after deletion
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Please select a task to delete.");
-                }
-            }
-        }
+        #endregion
     }
 }
