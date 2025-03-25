@@ -1,0 +1,68 @@
+﻿<Window x:Class="EventDriven.AddTask"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:EventDriven"
+        mc:Ignorable="d"
+        Title="AddTask" Height="495" Width="450" ResizeMode="NoResize" Loaded="Window_Loaded" WindowStartupLocation="CenterOwner"
+        Closing="AttemptClosing">
+
+    <Window.Resources>
+        <Style x:Key="RoundedButtonStyle" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                         CornerRadius="20"  
+                         BorderBrush="{TemplateBinding BorderBrush}" 
+                         BorderThickness="2">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="MinWidth" Value="155"/>
+            <Setter Property="MinHeight" Value="39"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="False">
+                    <Setter Property="Background" Value="Gray"/>
+                    <Setter Property="Foreground" Value="DarkGray"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.Background>
+            <ImageBrush ImageSource="/Assets/background.jpg"/>
+        </Grid.Background>
+        <StackPanel Margin="10,20,10,0">
+            <Label Content="Add Task" HorizontalAlignment="Center" FontFamily="Constantia" FontSize="35" FontWeight="Bold" Margin="10"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10" >
+                <Label Content="Name:" FontFamily="Constantia" FontSize="19" Margin="40,0,25,0"/>
+                <TextBox x:Name="TaskName_TB" Width="263" FontSize="13" Height="35" MaxLength="20"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <Label Content="Category:" FontFamily="Constantia" FontSize="19" Margin="39,0,0,0"/>
+                <ComboBox x:Name="Category_Box" Width="264" HorizontalContentAlignment="Center" FontSize="13"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <Label Content="Priority:" FontFamily="Constantia" FontSize="19" Margin="40,0,10,0"/>
+                <ComboBox x:Name="Priority_Box" Width="264" HorizontalContentAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Date:" FontFamily="Constantia" FontSize="19" Margin="40,0,35,0"/>
+                <DatePicker x:Name="DatePicker" FontSize="20" Width="264"/>
+            </StackPanel>
+            <Label Content="Description:" FontFamily="Constantia" FontSize="19" Width="351" />
+            <TextBox x:Name="Description_TB" Height="85" Width="354" TextWrapping="Wrap" AcceptsReturn="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+            <Button x:Name="Save_Button" Content="Save" Style="{DynamicResource RoundedButtonStyle}" Width="20" Margin="12" Click="Save_Button_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

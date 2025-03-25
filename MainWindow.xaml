@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:EventDriven"
         mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="900" WindowStartupLocation="CenterScreen">
-    
+        Title="MainWindow" Height="500" Width="991" WindowStartupLocation="CenterScreen" Loaded="Window_Loaded" ResizeMode="NoResize">
+
     <Window.Resources>
         <Style x:Key="RoundedButtonStyle" TargetType="Button">
             <Setter Property="Template">
@@ -22,26 +22,82 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Setter Property="Padding" Value="10"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Padding" Value="15"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="MinWidth" Value="155"/>
-            <Setter Property="MinHeight" Value="37"/>
+            <Setter Property="MinHeight" Value="39"/>
+            <Setter Property="BorderBrush" Value="#FF417F9A"/>
+            <Setter Property="Background" Value="White"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="False">
+                    <Setter Property="Background" Value="Gray"/>
+                    <Setter Property="Foreground" Value="DarkGray"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="RoundedButtonStyle2" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                    CornerRadius="10"  
+                    BorderBrush="{TemplateBinding BorderBrush}" 
+                    BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="MinHeight" Value="27"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="DarkRed"/>
+            <Setter Property="Background" Value="DarkRed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="False">
+                    <Setter Property="Background" Value="Gray"/>
+                    <Setter Property="Foreground" Value="DarkGray"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
 
-    <Grid>
-        <StackPanel Margin="0,0,669,0">
+    <Grid x:Name="MainGrid">
+        <Grid.Background>
+            <ImageBrush ImageSource="/Assets/background.jpg"/>
+        </Grid.Background>
+
+        <StackPanel Margin="0,0,769,0">
             <Label Content="Listify." HorizontalAlignment="Left" Height="63" Margin="20,20,0,0" VerticalAlignment="Top" Width="155" FontFamily="Constantia" FontSize="45" FontWeight="Bold"/>
-            <ListBox x:Name="btnCategory" Height="215" Width="190" Margin="20,30,0,0" BorderBrush="White">
-                <Button x:Name="ALLTASKS_BUTTON" Content="All Tasks" Style="{StaticResource RoundedButtonStyle}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                <Button x:Name="My_Day_Button" Content="My Day" Style="{StaticResource RoundedButtonStyle}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                <Button x:Name="Important_Button" Content="Important" Style="{StaticResource RoundedButtonStyle}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                <Button x:Name="Planned_Button" Content="Planned" Style="{StaticResource RoundedButtonStyle}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                <Button x:Name="Completed_Button" Content="Completed" Style="{StaticResource RoundedButtonStyle}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <ListBox x:Name="ListCategory" Height="230" Width="187" Margin="20,50,0,0" Background="{Binding}" BorderThickness="0">
             </ListBox>
-            <Button x:Name="AddCategory" Content="Add" Margin="30,50,0,0" Style="{StaticResource RoundedButtonStyle}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
         </StackPanel>
 
-        <Frame x:Name="ListFrame" Margin="231,115,51,141" BorderBrush="Black" NavigationUIVisibility="Hidden" BorderThickness="1"/>
+        <Label x:Name="Table_Lbl" Content="All Tasks" HorizontalAlignment="Left" VerticalAlignment="Top"  FontFamily="Constantia" FontSize="15" FontWeight="Bold" Margin="236,100,0,0" Width="220"/>
+        <StackPanel Margin="236,100,27,43">
+            <StackPanel Orientation="Horizontal" Width="398" Margin="25,0,0,0" HorizontalAlignment="Right">
+                <Label Content="Editing:" FontFamily="Constantia" FontSize="15" FontWeight="Bold" Width="66" Margin="169,0,0,0"/>
+                <Label x:Name="Status" Content="Off" FontFamily="Constantia" FontSize="15" FontWeight="Bold" Width="40" Margin="0,0,0,0" Foreground="Red"/>
+                <Button x:Name="DeleteCategory_Button" Content="Delete Category" Style="{StaticResource RoundedButtonStyle2}" Click="DeleteCategory_Button_Click" IsEnabled="false" Width="72"/>
+            </StackPanel>
+
+            <DataGrid x:Name="ListTable" Height="220" Margin="0,10,0,0" BorderBrush="Black" Background="White" IsReadOnly="True" AutoGenerateColumns="True" 
+                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Visible" SelectionMode="Single" 
+                      CanUserSortColumns="False" CanUserReorderColumns="False" CanUserResizeColumns="False" CellEditEnding="ListTable_CellEditEnding"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="ManipulateRow_Button" Content="Add Task" Style="{StaticResource RoundedButtonStyle}" Margin="0,20,10,0" Click="ManipulateRow_Button_Click" IsEnabled="False" MouseEnter="Button_OnHover" MouseLeave="Button_OnLeave"/>
+                <Button x:Name="EditRow_Button" Content="Edit Task" Style="{StaticResource RoundedButtonStyle}" Margin="0,20,10,0" IsEnabled="False" MouseEnter="Button_OnHover" MouseLeave="Button_OnLeave" Click="EditRow_Button_Click"/>
+                <Button x:Name="DeleteRow_Button" Content="Delete Task" Style="{StaticResource RoundedButtonStyle}" Margin="0,20,0,0" IsEnabled="False" MouseEnter="Button_OnHover" MouseLeave="Button_OnLeave"/>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </Window>
