@@ -351,14 +351,7 @@ namespace EventDriven
 
                     if (result == MessageBoxResult.Yes)
                     {
-                        if(current == -1)
-                        {
-                            fileManager.DeleteTask(taskName, updatedTable);
-
-                        }
-
-
-                        fileManager.DeleteTask(fileName, taskName);
+                        fileManager.DeleteTask(category, taskName);
                         RefreshTable(null, null); // Refresh the table after deletion
                     }
                 }

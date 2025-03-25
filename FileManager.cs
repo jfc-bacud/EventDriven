@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
@@ -124,8 +125,7 @@ namespace EventDriven
         {
             using (StreamWriter sw = new StreamWriter(Path.Combine(solutionDirectory, (category + ".txt")), true))
             {
-                sw.BaseStream.Seek(0, SeekOrigin.End);
-                sw.Write($"\n{name},{category},{date},{description},false,{priority}");
+                sw.WriteLine($"{name},{category},{date},{description},false,{priority}");
             }
         }
 
@@ -133,7 +133,7 @@ namespace EventDriven
         {
             using (StreamWriter sw = new StreamWriter(Path.Combine(solutionDirectory, (nameCategory + ".txt"))))
             {
-                sw.Write($"Task Name,Category,Due Date,Description,IsFinished,Urgency");
+                sw.WriteLine($"Task Name,Category,Due Date,Description,IsFinished,Urgency");
             }
         }
 
@@ -147,14 +147,12 @@ namespace EventDriven
 
                 using (StreamWriter sw = new StreamWriter(filePath))
                 {
-                    sw.BaseStream.Seek(0, SeekOrigin.End);
                     sw.WriteLine($"Task Name,Category,Due Date,Description,IsFinished,Urgency");
 
                     foreach (DataRow row in updatedTable.Rows)
                     {
                         if (row["Category"].ToString() == files[x].Replace(".txt", "").Replace(@"C:\Users\23-0085c\Source\Repos\EventDriven\Data\", ""))
                         {
-                            sw.BaseStream.Seek(0, SeekOrigin.End);
                             string line = $"{row["Task Name"]},{row["Category"]},{row["Due Date"]},{row["Description"]},{row["IsFinished"]},{row["Urgency"]}";
                             sw.WriteLine(line);
                         }
@@ -168,15 +166,15 @@ namespace EventDriven
             string filePath = Path.Combine(solutionDirectory, fileName);
 
             using (StreamWriter sw = new StreamWriter(filePath, false)) // Overwrites the file
-            {
-                // Write the header row
-                sw.WriteLine("Task Name,Category,Due Date,Description,IsFinished,Urgency");
+            {     
+                sw.Write("Task Name,Category,Due Date,Description,IsFinished,Urgency");
+                sw.BaseStream.Seek(0, SeekOrigin.End);
 
                 // Write all updated rows
                 foreach (DataRow row in updatedTable.Rows)
                 {
                     string line = $"{row["Task Name"]},{row["Category"]},{row["Due Date"]},{row["Description"]},{row["IsFinished"]},{row["Urgency"]}";
-                    sw.WriteLine(line);
+                    sw.Write($"\n{line}");
                 }
             }
         }
@@ -186,74 +184,39 @@ namespace EventDriven
             File.Delete(Path.Combine(solutionDirectory, file));
         }
 
-        public void DeleteTask(string taskName, DataTable updatedTable)
+        public void DeleteTask(string category, string taskName)
         {
-            string[] files = Directory.GetFiles(solutionDirectory);
+            List<string> words = TempRead(category, taskName);
 
-            for (int x = 0; x < files.Length; x++)
+            using (StreamWriter sw = new StreamWriter(Path.Combine(solutionDirectory, category + ".txt")))
             {
-                string filePath = Path.Combine(solutionDirectory, files[x]);
-
-                foreach (DataRow row in updatedTable.Rows)
-                {
-                    if (row["Task Name"].ToString() == taskName)
-                    {
-                        using 
-                    }
-                }
-
-
-                using (StreamWriter sw = new StreamWriter(filePath))
+                foreach (string line in words)
                 {
                     sw.BaseStream.Seek(0, SeekOrigin.End);
-                    sw.WriteLine($"Task Name,Category,Due Date,Description,IsFinished,Urgency");
+                    sw.WriteLine(line);
+                }
+            }
+            
+        }
 
-                    foreach (DataRow row in updatedTable.Rows)
+        private List<string> TempRead(string category, string taskName)
+        {
+            List<string> strings = new List<string>();
+
+            using (StreamReader sr = new StreamReader(Path.Combine(solutionDirectory, category + ".txt")))
+            {
+                string line;
+
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (!line.Contains(taskName))
                     {
-                        if (row["Category"].ToString() == files[x].Replace(".txt", "").Replace(@"C:\Users\23-0085c\Source\Repos\EventDriven\Data\", ""))
-                        {
-                            sw.BaseStream.Seek(0, SeekOrigin.End);
-                            string line = $"{row["Task Name"]},{row["Category"]},{row["Due Date"]},{row["Description"]},{row["IsFinished"]},{row["Urgency"]}";
-                            sw.WriteLine(line);
-                        }
+                        strings.Add(line);
                     }
                 }
             }
-        }
 
-
-        public void DeleteTask(string fileName, string taskName)
-        {
-            string filePath = Path.Combine(solutionDirectory, fileName);
-
-            using (StreamWriter sw = new StreamWriter(filePath))
-            {
-
-            }
-
-
-                if (!File.Exists(filePath))
-                {
-                    System.Windows.MessageBox.Show("File not found!");
-                    return;
-                }
-
-            List<string> lines = File.ReadAllLines(filePath).ToList();
-
-            // Check if the file has data to process
-            if (lines.Count <= 1)
-            {
-                System.Windows.MessageBox.Show("No tasks found in this category!");
-                return;
-            }
-
-            // Remove task by name (excluding the header line)
-            List<string> updatedLines = lines.Where(line => !line.StartsWith(taskName + ",")).ToList();
-
-            // Rewrite the file with updated lines
-            File.WriteAllLines(filePath, updatedLines);
-
-            System.Windows.MessageBox.Show("Task deleted successfully!");
+            return strings;
         }
     }
 }
