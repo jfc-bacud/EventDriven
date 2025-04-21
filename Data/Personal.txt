@@ -1,2 +1,0 @@
-Task Name,Category,Due Date,Description,IsFinished,Urgency
-Workout,Personal,29/03/2025,Workout,false,Low
