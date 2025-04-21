@@ -243,9 +243,6 @@ namespace EventDriven
         }
         private void DeleteRow_Button_Click(object sender, RoutedEventArgs e)
         {
-            DataTable updatedTable = ((DataView)ListTable.ItemsSource).ToTable();
-            fileManager.UpdateTask(updatedTable);
-
             if (ListTable.SelectedItem is DataRowView selectedRow)
             {
                 string taskName = selectedRow["Task Name"].ToString();
@@ -257,6 +254,7 @@ namespace EventDriven
                 {
                     fileManager.DeleteTask(category, taskName);
                     RefreshTable(null, null); // Refresh the table after deletion
+                    DataTable updatedTable = ((DataView)ListTable.ItemsSource).ToTable();
                 }
             }
             else
